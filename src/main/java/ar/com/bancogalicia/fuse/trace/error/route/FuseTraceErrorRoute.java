@@ -31,11 +31,13 @@ public class FuseTraceErrorRoute extends RouteBuilder {
         from("direct:tracing-1").process(exchange -> {
             String mdcValue = MDC.get(MDCUtil.MDC_TEST_KEY);
             LOGGER.info("multicast item 1 MDC: " + mdcValue);
+            exchange.getIn().setBody(mdcValue);
         });
 
         from("direct:tracing-2").process(exchange -> {
             String mdcValue = MDC.get(MDCUtil.MDC_TEST_KEY);
             LOGGER.info("multicast item 2 MDC: " + mdcValue);
+            exchange.getIn().setBody(mdcValue);
         });
 
         // you must extract rest handler as new definition in order to be able to test behaviour

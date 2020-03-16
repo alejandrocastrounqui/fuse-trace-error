@@ -15,7 +15,7 @@ public class TraceStrategy implements AggregationStrategy {
         Object newExchangeInBody = newExchangeIn.getBody();
         List collectorList = null;
         if (oldExchange == null) {
-            collectorList = new ArrayList();
+            collectorList = new ArrayList<String>();
             collectorList.add(newExchangeInBody);
             newExchangeIn.setBody(collectorList);
             return newExchange;

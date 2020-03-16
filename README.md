@@ -1,6 +1,6 @@
-## pom-cross-cotizacion-adapter
+## Fuse Trace Error
 
-adapter de consulta de cotizacion
+Este proyecto muestra un inconveniente de propagacion de informacion de diagnostico y traza sobre rutas Camel
 
 ####  Analisis ejecucion
   
@@ -13,6 +13,9 @@ Logback esta configurado para mostrar el nombre del thread origen
 Si se observan los logs de `unitOfWork:0`, `unitOfWork:1` y `unitOfWork:2` estan asociados cada uno a un thread, 
 de manera estricta. La construccion, y los metodos `beforeProcess`, `done`, `afterProcess` suceden sobre el mismo 
 thread 
+Tambien puede obsservarse que los metodos `done` y `afterProcess` se ejecutan con el argumento `doneSync` 
+con valor `true` cuando en realidad la tarea se lleva a cabo en **threads** diferentes y un notable **interliving** 
+entre algunos de ellos
 
 ```ini
 2020-03-15 21:04:59.679  INFO 37560 --- [           main] a.c.b.fuse.trace.error.Application       : fuse tracing error application is now running.....
@@ -78,3 +81,40 @@ curl 'http://localhost:8080/fuse/tracing'
 curl 'http://localhost:8080/spring-web/tracing'
 ```
 
+####  Casos de prueba
+
+El proyecto implementa varios test:
+
+Sobre los endpoints implementados con spring-web, se proveen 3 test
+La aplicacion responde con status code 200 cuando se invoca un path existente
+La aplciacion responde **NOT_FOUND**  cuando se invoca un path inexistente
+La aplicacion tiene acceso a los valores de traza cuando se ejecuta en un contexto asincronico
+en este ultimo, se muestra como un conjunto de procesos asincornicos tienen acceso a valores de MDC 
+determinados en el hilo general de la aplicacion. Esto se logra con un wrapper implentado en el mismo proyecto
+estos wrappers colectan valores mdc y el span jaeger del hilo donde son ejecutados para configurarlos
+en el contexto en el que la instancia de *Callable* o *Runnable* es ejecutada
+
+Sobre los endpoints implementados con fuse, no fue posible comprobar los paths registrados. La documentacion
+recomienda extraer el comportamiento de una definicion REST a un nuevo endpoint de tipo "direct:abc" para poder
+hacer comprobaciones sobre este ultimo. 
+Es deseable configurar un entorno de pruebas en el que se pueda hacer comprobaciones de endpoints HTTP
+La unica prueba Fuse verifica que el endopoint restFuseTracing asigne un lista conteniendo los valores MDC como 
+cuerpo del **message** `in`, actualmente esta prueba falla y es lo que deseamos solucionar
+
+El comando `mvn test` mostrará el siguiente output
+
+```bash
+[INFO]                                                                            
+[INFO] Results:                                                                   
+[INFO]                                                                            
+[ERROR] Failures:                                                                 
+[ERROR]   FuseTraceErrorRouteTest.whenMDCIsPropagatedThenCallableCanAccessMDC:43  
+Expected: every item is is "MDC_TEST_VALUE"                                       
+     but: an item was null                                                        
+[INFO]                                                                            
+[ERROR] Tests run: 6, Failures: 1, Errors: 0, Skipped: 0                          
+[INFO]                                                                            
+[INFO] ------------------------------------------------------------------------   
+[INFO] BUILD FAILURE                                                              
+[INFO] ------------------------------------------------------------------------   
+```
