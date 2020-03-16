@@ -4,17 +4,17 @@ Este proyecto muestra un inconveniente de propagacion de informacion de diagnost
 
 ####  Analisis ejecucion
   
-A continuacion se muestra el output de la aplicacion durante la ejecucion del servicio fuse.
+A continuacion se muestra el output de la aplicacion durante la ejecucion del servicio fuse.    
 Se observa que los UnitOfWork en el contexto de un *multicast* ejecutan toda su logica sobre el mismo thread, 
 por lo tanto es imposible propagar información de un thread al otro.
 Las instancias de UnitOfWork son numeradas mediante un proceso sincronico en `UnitOfWorkFactory` (solo se sincroniza 
-el incremento de un entero para interferir al minimo el paralelismo) 
-Logback esta configurado para mostrar el nombre del thread origen
+el incremento de un entero para interferir al minimo el paralelismo)    
+Logback esta configurado para mostrar el nombre del thread origen.    
 Si se observan los logs de `unitOfWork:0`, `unitOfWork:1` y `unitOfWork:2` estan asociados cada uno a un thread, 
 de manera estricta. La construccion, y los metodos `beforeProcess`, `done`, `afterProcess` suceden sobre el mismo 
-thread 
+thread.     
 Tambien puede obsservarse que los metodos `done` y `afterProcess` se ejecutan con el argumento `doneSync` 
-con valor `true` cuando en realidad la tarea se lleva a cabo en **threads** diferentes y un notable **interliving** 
+con valor `true` cuando en realidad la tarea se lleva a cabo en *threads* diferentes y un notable *interliving* 
 entre algunos de ellos
 
 ```ini
@@ -85,21 +85,21 @@ curl 'http://localhost:8080/spring-web/tracing'
 
 El proyecto implementa varios test:
 
-Sobre los endpoints implementados con spring-web, se proveen 3 test
-La aplicacion responde con status code 200 cuando se invoca un path existente
-La aplciacion responde **NOT_FOUND**  cuando se invoca un path inexistente
-La aplicacion tiene acceso a los valores de traza cuando se ejecuta en un contexto asincronico
-en este ultimo, se muestra como un conjunto de procesos asincornicos tienen acceso a valores de MDC 
+Sobre los endpoints implementados con spring-web, se proveen 3 test.    
+La aplicacion responde con status code 200 cuando se invoca un path existente.    
+La aplciacion responde **NOT_FOUND**  cuando se invoca un path inexistente.    
+La aplicacion tiene acceso a los valores de traza cuando se ejecuta en un contexto asincronico.    
+En este ultimo, se muestra como un conjunto de procesos asincornicos tienen acceso a valores de MDC 
 determinados en el hilo general de la aplicacion. Esto se logra con un wrapper implentado en el mismo proyecto
 estos wrappers colectan valores mdc y el span jaeger del hilo donde son ejecutados para configurarlos
-en el contexto en el que la instancia de *Callable* o *Runnable* es ejecutada
+en el contexto en el que la instancia de **Callable** o **Runnable** es ejecutada    
 
 Sobre los endpoints implementados con fuse, no fue posible comprobar los paths registrados. La documentacion
 recomienda extraer el comportamiento de una definicion REST a un nuevo endpoint de tipo "direct:abc" para poder
-hacer comprobaciones sobre este ultimo. 
-Es deseable configurar un entorno de pruebas en el que se pueda hacer comprobaciones de endpoints HTTP
-La unica prueba Fuse verifica que el endopoint restFuseTracing asigne un lista conteniendo los valores MDC como 
-cuerpo del **message** `in`, actualmente esta prueba falla y es lo que deseamos solucionar
+hacer comprobaciones sobre este ultimo.    
+Es deseable configurar un entorno de pruebas en el que se pueda hacer comprobaciones de endpoints HTTP.    
+La unica prueba Camel verifica que el endopoint `restFuseTracing` asigne una lista conteniendo los valores MDC como 
+cuerpo del *message* `in`, actualmente esta prueba falla y es lo que deseamos solucionar
 
 El comando `mvn test` mostrará el siguiente output
 
