@@ -26,7 +26,7 @@
         <jmapper.core.version>1.6.0.1</jmapper.core.version>
         <modelmapper.version>2.3.3</modelmapper.version>
         <mapstruct.version>1.3.0.Final</mapstruct.version>
-        <commons.io.version>2.5.0.redhat-3</commons.io.version>
+        <commons.io.version>2.7</commons.io.version>
         <spring-boot-maven-plugin.version>2.2.5.RELEASE</spring-boot-maven-plugin.version>
     </properties>
     <dependencyManagement>
